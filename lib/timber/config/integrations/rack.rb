@@ -1,6 +1,13 @@
+require "timber"
+
+Timber::Config.instance.define_singleton_method(:logrageify!) do
+  integrations.rack.http_events.collapse_into_single_event = true
+end
+
 module Timber
   class Config
     module Integrations
+      extend self
       # Convenience module for accessing the various `Timber::Integrations::Rack::*` classes
       # through the {Timber::Config} object. Timber couples configuration with the class
       # responsibls for implementing it. This provides for a tighter design, but also
@@ -11,6 +18,10 @@ module Timber
       #
       #     config = Timber::Config.instance
       #     config.integrations.rack.http_events.enabled = false
+      def rack
+        Rack
+      end
+
       module Rack
         extend self
 
