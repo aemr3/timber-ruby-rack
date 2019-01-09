@@ -40,7 +40,7 @@ Gem::Specification.new do |spec|
   # spec.add_dependency "timber", "3.0.0.alpha.0"
   spec.add_runtime_dependency "rack", ">= 1.2", "< 3.0"
 
-  spec.add_development_dependency "bundler", "~> 1.0"
+  spec.add_development_dependency "bundler", ">= 0.0"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
 end
