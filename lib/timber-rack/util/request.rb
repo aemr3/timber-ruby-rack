@@ -1,5 +1,3 @@
-require 'rack'
-
 module Timber
   module Util
     # @private

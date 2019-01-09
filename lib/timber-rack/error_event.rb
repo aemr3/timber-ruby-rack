@@ -1,6 +1,6 @@
 require "timber/config"
 require "timber/events/error"
-require "timber/integrations/rack/middleware"
+require "timber-rack/middleware"
 
 module Timber
   module Integrations

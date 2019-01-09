@@ -1,10 +1,8 @@
 require "bundler/setup"
+require "timber-rack"
 
 # Testing
-require 'rspec'
-
-# Support files, order is relevant
-require File.join(File.dirname(__FILE__), 'support', 'timber')
+require "rspec"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
