@@ -1,7 +1,7 @@
 require "timber/contexts/http"
 require "timber/current_context"
 require "timber-rack/middleware"
-require "timber/util/request"
+require "timber-rack/util/request"
 
 module Timber
   module Integrations
