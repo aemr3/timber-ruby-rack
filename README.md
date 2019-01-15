@@ -1,39 +1,117 @@
-# Timber::Integrations::Rack
+# 🌲 Timber - Great Ruby Logging Made Easy
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/timber/ruby/rack`. To experiment with that code, run `bin/console` for an interactive prompt.
+[![ISC License](https://img.shields.io/badge/license-ISC-ff69b4.svg)](LICENSE.md)
+[![Yard Docs](http://img.shields.io/badge/yard-docs-blue.svg)](http://www.rubydoc.info/github/timberio/timber-ruby-rack)
+[![Build Status](https://travis-ci.org/timberio/timber-ruby-rack.svg?branch=master)](https://travis-ci.org/timberio/timber-ruby-rack)
+[![Code Climate](https://codeclimate.com/github/timberio/timber-ruby-rack/badges/gpa.svg)](https://codeclimate.com/github/timberio/timber-ruby-rack)
 
-TODO: Delete this and the text above, and describe your gem
+Timber for Ruby is a drop in replacement for your Ruby logger that
+[unobtrusively augments](https://timber.io/docs/concepts/structuring-through-augmentation) your
+logs with [rich metadata and context](https://timber.io/docs/concepts/metadata-context-and-events)
+making them [easier to search, use, and read](#get-things-done-with-your-logs). It pairs with the
+[Timber console](#the-timber-console) to deliver a tailored Ruby logging experience designed to make
+you more productive.
+
+1. [**Installation**](#installation)
+2. [**Usage** - Simple & powerful API](#usage)
+3. [**Configuration**](#configuration)
+
 
 ## Installation
 
-Add this line to your application's Gemfile:
+1. In your `Gemfile`, add the `timber-rails` gem:
 
-```ruby
-gem 'timber-ruby-rack'
-```
+    ```ruby
+    gem 'timber-rack', '~> 1.0'
+    ```
 
-And then execute:
+2. TODO
 
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install timber-ruby-rack
+   ```ruby
+   use Timber::Integrations::Rack::HTTPContext
+   use Timber::Integrations::Rack::UserContext
+   use Timber::Integrations::Rack::HTTPEvents
+   use Timber::Integrations::Rack::ErrorEvent
+   ```
 
 ## Usage
 
-TODO: Write usage instructions here
+Use the `Timber::Logger` just like you would `::Logger`:
 
-## Development
+```ruby
+logger.debug("Debug message")
+logger.info("Info message")
+logger.warn("Warn message")
+logger.error("Error message")
+logger.fatal("Fatal message")
+```
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+## Configuration
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+Below are a few popular configuration options, for a comprehensive list, see
+[Timber::Config](http://www.rubydoc.info/github/timberio/timber-rack/Timber/Config).
 
-## Contributing
+### Reduce Logging
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/timber-ruby-rack.
+```ruby
+Timber.config.integrations.rack.http_events.collapse_into_single_event = true
+```
 
-## License
+It turns this:
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+```
+Started GET "/"
+Completed 200 OK in 1.2ms
+```
+
+Into this:
+
+```
+GET / completed with 200 OK in 1.2ms
+```
+
+### Silence Specific Requests
+
+
+Silencing noisy requests can be helpful for silencing load balance health checks, bot scanning,
+or activity that generally is not meaningful to you. The following will silence all
+`[GET] /_health` requests:
+
+```ruby
+Timber.config.integrations.rack.http_events.silence_request = lambda do |rack_env, rack_request|
+  rack_request.path == "/_health"
+end
+```
+
+We require a block because it gives you complete control over how you want to silence requests.
+The first parameter being the traditional Rack env hash, the second being a
+[Rack Request](http://www.rubydoc.info/gems/rack/Rack/Request) object.
+
+---
+
+### User Context
+
+By default Timber automatically captures user context for most of the popular authentication
+libraries (Devise, and Clearance). See
+[Timber::Integrations::Rack::UserContext](http://www.rubydoc.info/github/timberio/timber-rack/Timber/Integrations/Rack/UserContext)
+for a complete list.
+
+In cases where you Timber doesn't support your strategy, or you want to customize it further,
+you can do so like:
+
+```ruby
+Timber.config.integrations.rack.user_context.custom_user_hash = lambda do |rack_env|
+  user = rack_env['warden'].user
+  if user
+    {
+      id: user.id, # unique identifier for the user, can be an integer or string,
+      name: user.name, # identifiable name for the user,
+      email: user.email, # user's email address
+    }
+  else
+    nil
+  end
+end
+```
+
+*All* of the user hash keys are optional, but you must provide at least one.

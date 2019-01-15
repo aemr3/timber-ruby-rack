@@ -21,9 +21,6 @@ module Timber
           # but please proceed with caution:
           #
           # 1. Capturing HTTP bodies can use quite a bit of data (this can be mitigated, see below)
-          # 2. The {Events::ControllerCall} event captures the parsed parmaters sent to
-          #    the controller. This is a parsed representation of the body, which is usually more
-          #    helpful and redundant to the body captured here.
           #
           # If you opt to capture bodies, you can also truncate the size to reduce the data
           # captured. See {Events::HTTPRequest}.
