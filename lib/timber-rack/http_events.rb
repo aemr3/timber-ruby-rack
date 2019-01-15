@@ -4,7 +4,7 @@ require "timber/config"
 require "timber/contexts/http"
 require "timber/current_context"
 require "timber/events/http_request"
-require "timber/events/http_response"
+require "timber-rack/http_response"
 require "timber-rack/middleware"
 
 module Timber
@@ -131,7 +131,7 @@ module Timber
               content_length = headers[CONTENT_LENGTH_KEY]
               time_ms = (Time.now - start) * 1000.0
 
-              Events::HTTPResponse.new(
+              HTTPResponse.new(
                 content_length: content_length,
                 headers: headers,
                 http_context: http_context,
@@ -165,12 +165,14 @@ module Timber
 
             status, headers, body = @app.call(env)
 
+            puts "I am in the rack library outside of block #{Thread.current.object_id}"
             Config.instance.logger.info do
+              puts "I am in the rack library #{Thread.current.object_id}"
               event_body = capture_response_body? ? body : nil
               content_length = headers[CONTENT_LENGTH_KEY]
               time_ms = (Time.now - start) * 1000.0
 
-              Events::HTTPResponse.new(
+              HTTPResponse.new(
                 body: event_body,
                 content_length: content_length,
                 headers: headers,
