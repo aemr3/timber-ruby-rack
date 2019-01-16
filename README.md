@@ -87,8 +87,6 @@ We require a block because it gives you complete control over how you want to si
 The first parameter being the traditional Rack env hash, the second being a
 [Rack Request](http://www.rubydoc.info/gems/rack/Rack/Request) object.
 
----
-
 ### User Context
 
 By default Timber automatically captures user context for most of the popular authentication
