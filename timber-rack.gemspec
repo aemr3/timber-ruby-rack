@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{Timber for Ruby is a drop in replacement for your Ruby logger that unobtrusively augments your logs with rich metadata and context making them easier to search, use, and read.}
   spec.homepage      = "https://docs.timber.io/languages/ruby/"
-  spec.license       = "MIT"
+  spec.license       = "ISC"
 
   spec.required_ruby_version     = '>= 1.9.0'
 
