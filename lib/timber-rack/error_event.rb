@@ -6,7 +6,6 @@ module Timber
   module Integrations
     module Rack
       # A Rack middleware that is reponsible for capturing exception and error events
-      # {Timber::Events::Error}.
       class ErrorEvent < Middleware
         def call(env)
           begin

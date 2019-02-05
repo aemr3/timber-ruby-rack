@@ -3,7 +3,7 @@ require "set"
 require "timber/config"
 require "timber/contexts/http"
 require "timber/current_context"
-require "timber/events/http_request"
+require "timber-rack/http_request"
 require "timber-rack/http_response"
 require "timber-rack/middleware"
 
@@ -101,6 +101,24 @@ module Timber
           def silence_request
             @silence_request
           end
+
+          def http_body_limit=(value)
+            @http_body_limit = value
+          end
+
+          # Accessor method for {#http_body_limit=}
+          def http_body_limit
+            @http_body_limit
+          end
+
+          def http_header_filters=(value)
+            @http_header_filters = value
+          end
+
+          # Accessor method for {#http_header_filters=}
+          def http_header_filters
+            @http_header_filters
+          end
         end
 
         CONTENT_LENGTH_KEY = 'Content-Length'.freeze
@@ -126,27 +144,42 @@ module Timber
               http_context_key = Contexts::HTTP.keyspace
               http_context = CurrentContext.fetch(http_context_key)
               content_length = headers[CONTENT_LENGTH_KEY]
-              time_ms = (Time.now - start) * 1000.0
+              duration_ms = (Time.now - start) * 1000.0
 
-              HTTPResponse.new(
+              http_response = HTTPResponse.new(
                 content_length: content_length,
                 headers: headers,
                 http_context: http_context,
                 request_id: request.request_id,
                 status: status,
-                time_ms: time_ms
+                duration_ms: duration_ms,
+                body_limit: self.class.http_body_limit,
+                headers_to_sanitize: self.class.http_header_filters,
               )
+
+              {
+                message: http_response.message,
+                event: {
+                  http_response_sent: {
+                    body: http_response.body,
+                    content_length: http_response.content_length,
+                    headers_json: http_response.headers_json,
+                    request_id: http_response.request_id,
+                    service_name: http_response.service_name,
+                    status: http_response.status,
+                    duration_ms: http_response.duration_ms,
+                  }
+                }
+              }
             end
 
             [status, headers, body]
-
           else
             start = Time.now
 
             Config.instance.logger.info do
               event_body = capture_request_body? ? request.body_content : nil
-
-              Events::HTTPRequest.new(
+              http_request = HTTPRequest.new(
                 body: event_body,
                 content_length: request.content_length,
                 headers: request.headers,
@@ -155,28 +188,64 @@ module Timber
                 path: request.path,
                 port: request.port,
                 query_string: request.query_string,
-                request_id: request.request_id, # we insert this middleware after ActionDispatch::RequestId
-                scheme: request.scheme
+                request_id: request.request_id,
+                scheme: request.scheme,
+                body_limit: self.class.http_body_limit,
+                headers_to_sanitize: self.class.http_header_filters,
               )
+
+              {
+                message: http_request.message,
+                event: {
+                  http_request_received: {
+                    body: http_request.body,
+                    content_length: http_request.content_length,
+                    headers_json: http_request.headers_json,
+                    host: http_request.host,
+                    method: http_request.method,
+                    path: http_request.path,
+                    port: http_request.port,
+                    query_string: http_request.query_string,
+                    request_id: http_request.request_id,
+                    scheme: http_request.scheme,
+                    service_name: http_request.service_name,
+                  }
+                }
+              }
             end
 
             status, headers, body = @app.call(env)
 
-            puts "I am in the rack library outside of block #{Thread.current.object_id}"
             Config.instance.logger.info do
-              puts "I am in the rack library #{Thread.current.object_id}"
               event_body = capture_response_body? ? body : nil
               content_length = headers[CONTENT_LENGTH_KEY]
-              time_ms = (Time.now - start) * 1000.0
+              duration_ms = (Time.now - start) * 1000.0
 
-              HTTPResponse.new(
+              http_response = HTTPResponse.new(
                 body: event_body,
                 content_length: content_length,
                 headers: headers,
                 request_id: request.request_id,
                 status: status,
-                time_ms: time_ms
+                duration_ms: duration_ms,
+                body_limit: self.class.http_body_limit,
+                headers_to_sanitize: self.class.http_header_filters,
               )
+
+              {
+                message: http_response.message,
+                event: {
+                  http_response_sent: {
+                    body: http_response.body,
+                    content_length: http_response.content_length,
+                    headers_json: http_response.headers_json,
+                    request_id: http_response.request_id,
+                    service_name: http_response.service_name,
+                    status: http_response.status,
+                    duration_ms: http_response.duration_ms,
+                  }
+                }
+              }
             end
 
             [status, headers, body]
