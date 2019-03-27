@@ -141,8 +141,7 @@ module Timber
             status, headers, body = @app.call(env)
 
             Config.instance.logger.info do
-              http_context_key = Contexts::HTTP.keyspace
-              http_context = CurrentContext.fetch(http_context_key)
+              http_context = CurrentContext.fetch(:http)
               content_length = headers[CONTENT_LENGTH_KEY]
               duration_ms = (Time.now - start) * 1000.0
 
