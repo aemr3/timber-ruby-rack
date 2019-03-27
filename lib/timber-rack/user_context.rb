@@ -67,13 +67,10 @@ module Timber
         def call(env)
           user_hash = get_user_hash(env)
           if user_hash
-            context = Contexts::User.new(user_hash)
-            CurrentContext.with(context) do
-              @app.call(env)
-            end
-          else
-            @app.call(env)
+            CurrentContext.add({user: user_hash})
           end
+
+          @app.call(env)
         end
 
         private
