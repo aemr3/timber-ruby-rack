@@ -10,8 +10,7 @@ module Timber
 
       REMOTE_IP_KEY_NAME = 'action_dispatch.remote_ip'.freeze
       REQUEST_ID_KEY_NAME1 = 'action_dispatch.request_id'.freeze
-      REQUEST_ID_KEY_NAME2 = 'X-Request-ID'.freeze
-      REQUEST_ID_KEY_NAME3 = 'X-Request-Id'.freeze
+      REQUEST_ID_KEY_NAME2 = 'HTTP_X_REQUEST_ID'.freeze
 
       def body_content
         content = body.read
@@ -57,8 +56,7 @@ module Timber
 
       def request_id
         @request_id ||= @env[REQUEST_ID_KEY_NAME1] ||
-          @env[REQUEST_ID_KEY_NAME2] ||
-          @env[REQUEST_ID_KEY_NAME3]
+          @env[REQUEST_ID_KEY_NAME2]
       end
     end
   end
