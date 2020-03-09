@@ -14,7 +14,7 @@ module Timber
             host: request.host,
             method: request.request_method,
             path: request.path,
-            remote_addr: request.ip,
+            remote_addr: env['HTTP_CF_CONNECTING_IP'] || request.ip,
             request_id: request.request_id
           )
 
